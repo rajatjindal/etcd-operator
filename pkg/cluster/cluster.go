@@ -306,6 +306,15 @@ func isSpecEqual(s1, s2 api.ClusterSpec) bool {
 	if s1.Size != s2.Size || s1.Paused != s2.Paused || s1.Version != s2.Version {
 		return false
 	}
+
+	if s1.Pod.HostNetwork != s2.Pod.HostNetwork {
+		return false
+	}
+
+	if s1.Pod.DNSPolicy != s2.Pod.DNSPolicy {
+		return false
+	}
+
 	return true
 }
 
