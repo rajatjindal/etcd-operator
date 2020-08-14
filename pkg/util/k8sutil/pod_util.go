@@ -21,7 +21,7 @@ import (
 	api "github.com/coreos/etcd-operator/pkg/apis/etcd/v1beta2"
 	"github.com/coreos/etcd-operator/pkg/util/etcdutil"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -73,7 +73,10 @@ func newEtcdProbe(isSecure bool) *v1.Probe {
 	cmd := "ETCDCTL_API=3 etcdctl endpoint status"
 	if isSecure {
 		tlsFlags := fmt.Sprintf("--cert=%[1]s/%[2]s --key=%[1]s/%[3]s --cacert=%[1]s/%[4]s", operatorEtcdTLSDir, etcdutil.CliCertFile, etcdutil.CliKeyFile, etcdutil.CliCAFile)
-		cmd = fmt.Sprintf("ETCDCTL_API=3 etcdctl --endpoints=https://localhost:%d %s endpoint status", EtcdClientPort, tlsFlags)
+		//we are adding https://localhost:%d twice in endpoints list as workaround for
+		//error in logs 'rejected connection from "127.0.0.1:55084" (error "EOF", ServerName "localhost")'
+		//which goes away if we do that
+		cmd = fmt.Sprintf("ETCDCTL_API=3 etcdctl --endpoints=https://localhost:%d,https://localhost:%d %s endpoint status", EtcdClientPort, EtcdClientPort, tlsFlags)
 	}
 	return &v1.Probe{
 		Handler: v1.Handler{
